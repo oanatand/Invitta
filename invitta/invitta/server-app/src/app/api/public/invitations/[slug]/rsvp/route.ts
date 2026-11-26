@@ -1,8 +1,10 @@
 import { eq } from "drizzle-orm";
+import { after } from "next/server";
 import { z } from "zod";
 import { db } from "@/db/client";
 import { guestGroups, guests, invitations } from "@/db/schema";
 import { ApiError, json, parseBody, route, type SlugParams } from "@/lib/http";
+import { emailCoupleAboutAnswer } from "@/lib/rsvp-email";
 
 const Body = z.object({
   name: z.string().trim().min(1).max(160),
@@ -43,6 +45,20 @@ export const POST = route<SlugParams>(async (req, { params }) => {
         position: i,
       })),
     );
+  });
+  // After the guest got their answer: email the couple. A mail problem must never fail the RSVP.
+  after(async () => {
+    try {
+      await emailCoupleAboutAnswer(inv.id, {
+        name: body.name,
+        attend: body.attend,
+        people,
+        menu: body.attend ? (body.menu ?? "standard") : null,
+        message: body.message || null,
+      });
+    } catch (e) {
+      console.error("[rsvp-email] could not notify the couple:", e);
+    }
   });
   return json({ ok: true }, { status: 201 });
 });

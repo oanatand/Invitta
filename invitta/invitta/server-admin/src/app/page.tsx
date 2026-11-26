@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { IMG } from "@/lib/assets";
+import { COLLECTION, FEATURED } from "@/lib/collection";
+import { ModelCard } from "@/components/ModelCard";
 import type { Metadata } from "next";
 import { PhoneMockup } from "@/components/PhoneMockup";
 import { InvitationPreview } from "@/components/InvitationPreview";
@@ -13,17 +15,10 @@ export const metadata: Metadata = {
     title: "Invitta RSVP — Invitații digitale de nuntă",
     description: "Invitații digitale create cu eleganță. Momente speciale, împărtășite cu cei dragi.",
     type: "website",
-    images: [IMG.heroCouple],
+    images: [IMG.heroHands],
   },
-  twitter: { card: "summary_large_image", images: [IMG.heroCouple] },
+  twitter: { card: "summary_large_image", images: [IMG.heroHands] },
 };
-
-const featured = [
-  { name: "Minimal Ivory", slug: "minimal-ivory", img: IMG.tplMinimalIvory, no: "I", mood: "Pur · Atemporal", color: true },
-  { name: "Italian Romance", slug: "italian-romance", img: IMG.tplItalianRomance, no: "II", mood: "Cald · Toscan", color: true },
-  { name: "Black Tie", slug: "black-tie", img: IMG.blacktie, no: "III", mood: "Sofisticat · Nocturn", color: false },
-  { name: "Floral Beige", slug: "floral-beige", img: IMG.floral, no: "IV", mood: "Romantic · Delicat", color: false },
-];
 
 const steps = [
   { n: "01", title: "Alege un design", desc: "Selectează din colecția noastră de invitații editoriale, creată cu grijă." },
@@ -46,9 +41,8 @@ const testimonials = [
 ];
 
 const plans = [
-  { name: "Basic", price: "0", desc: "Pentru a începe", features: ["1 design", "50 invitați", "RSVP de bază", "Link personalizat"] },
-  { name: "Premium", price: "129", desc: "Experiența completă", featured: true, features: ["Toate design-urile", "200 invitați", "Aranjare la mese", "Galerie foto", "Suport prioritar"] },
-  { name: "Luxury", price: "249", desc: "Fără limite", features: ["Invitați nelimitați", "Domeniu propriu", "Personalizare completă", "Designer dedicat", "Muzică & video"] },
+  { name: "Basic", price: "150", desc: "Pentru a începe", features: ["1 design", "50 invitați", "RSVP de bază", "Link personalizat"] },
+  { name: "Premium", price: "199", desc: "Experiența completă", featured: true, features: ["Toate design-urile", "200 invitați", "Aranjare la mese", "Galerie foto", "Suport prioritar"] },
 ];
 
 function Label({ children, className = "" }: { children: React.ReactNode; className?: string }) {
@@ -63,25 +57,24 @@ export default function Index() {
       {/* HERO */}
       <section className="relative min-h-[88vh] overflow-hidden">
         <img
-          src={IMG.heroCouple}
-          alt="Mirele și mireasa mergând pe o alee, mireasa privind peste umăr"
+          src={IMG.heroHands}
+          alt="Mireasa și mirele întinzându-și mâinile unul spre celălalt"
           width={735}
-          height={528}
+          height={480}
           className="absolute inset-0 h-full w-full object-cover object-center animate-[invitta-reveal_1.6s_ease-out_both]"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background from-45% via-background/95 via-70% to-transparent sm:bg-gradient-to-r sm:from-35% sm:via-background/85 sm:via-55% sm:to-transparent sm:to-85%" />
         <div className="relative mx-auto flex min-h-[88vh] max-w-7xl flex-col justify-end px-6 pb-16 pt-32 md:justify-center md:pb-0">
           <div className="max-w-xl animate-fade-up">
-            <Label>Atelier de invitații digitale</Label>
-            <h1 className="mt-8 font-serif text-5xl leading-[1.02] text-foreground sm:text-6xl lg:text-[5.5rem]">
-              Povestea voastră merită o invitație <em className="text-stone">pe măsură.</em>
+            <Label className="!text-ivory/70">Atelier de invitații digitale</Label>
+            <h1 className="mt-8 font-serif text-5xl leading-[1.02] text-ivory sm:text-6xl lg:text-[5.5rem]">
+              Povestea voastră merită o invitație <em className="text-ivory/70">pe măsură.</em>
             </h1>
-            <div className="mt-8 h-px w-16 bg-foreground/30" />
-            <p className="mt-8 max-w-sm text-base leading-relaxed text-stone">
+            <div className="mt-8 h-px w-16 bg-ivory/40" />
+            <p className="mt-8 max-w-sm text-base leading-relaxed text-ivory/80">
               Invitații digitale create cu eleganță. Momente speciale, împărtășite cu cei dragi.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-6">
-              <a href="#colectii" className="rounded-[4px] bg-primary px-8 py-4 text-sm tracking-wide text-primary-foreground transition-opacity hover:opacity-90">
+              <a href="#colectii" className="rounded-[4px] bg-ivory px-8 py-4 text-sm tracking-wide text-noir transition-opacity hover:opacity-90">
                 Descoperă colecțiile
               </a>
             </div>
@@ -89,7 +82,7 @@ export default function Index() {
         </div>
       </section>
 
-      {/* COLLECTIONS */}
+      {/* COLLECTIONS: a short, static grid of the recommended designs; the full catalogue lives on /modele */}
       <section id="templates" className="collection-section mx-auto max-w-[1400px] px-6 py-28 md:py-36">
         <div id="colectii" className="grid gap-x-12 gap-y-6 sm:grid-cols-2 sm:items-end">
           <div>
@@ -99,65 +92,31 @@ export default function Index() {
               <em className="block">pentru fiecare poveste</em>
             </h2>
           </div>
-          <p className="max-w-md text-base leading-relaxed text-collection-copy">
+          <p className="max-w-md text-base leading-relaxed text-collection-copy sm:justify-self-end">
             Fiecare design este compus ca o papetărie de nuntă — tipografie atentă, ritm și liniște.
           </p>
         </div>
-        <div className="mt-6">
-          <Link href="/modele" className="group/all inline-flex items-center gap-3 text-[11px] uppercase text-collection-ink">
-            <span className="border-b border-collection-divider pb-1.5 transition-colors group-hover/all:border-collection-ink">
-              Vezi toate modelele
-            </span>
+
+        <ul
+          aria-label="Modelele recomandate"
+          className="mt-14 grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 md:gap-x-8 md:gap-y-14"
+        >
+          {FEATURED.map((m) => (
+            <li key={m.slug}>
+              <ModelCard model={m} compact />
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-16 flex justify-center">
+          <Link
+            href="/modele"
+            className="group/all inline-flex items-center gap-4 rounded-[4px] border border-collection-ink px-8 py-4 text-[11px] uppercase tracking-[0.2em] text-collection-ink transition-colors hover:bg-collection-ink hover:text-collection-light focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-collection-ink"
+          >
+            <span>{`Vezi toate cele ${COLLECTION.length} ${COLLECTION.length >= 20 ? "de " : ""}modele`}</span>
             <span aria-hidden="true" className="transition-transform duration-500 group-hover/all:translate-x-1">→</span>
           </Link>
         </div>
-
-        <div className="mt-12 grid items-start gap-x-12 gap-y-16 sm:grid-cols-2">
-          {featured.map((t, index) => (
-            <figure key={t.name} className={`group min-w-0 ${index % 2 === 1 ? "sm:mt-16" : ""}`}>
-              <Link href={`/invitatie/${t.slug}`} aria-label={`Vezi invitația ${t.name}`} className="block overflow-hidden rounded-[4px] bg-collection-light focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-collection-ink">
-                <img
-                  src={t.img}
-                  alt={`Invitația ${t.name}`}
-                  loading="lazy"
-                  width={800}
-                  height={1200}
-                  className={`aspect-[5/4] w-full object-cover ${t.color ? "" : "grayscale "}transition-transform duration-[1.2s] ease-out group-hover:scale-[1.03] group-focus-within:scale-[1.03] motion-reduce:transform-none motion-reduce:transition-none`}
-                />
-              </Link>
-              <figcaption className="mt-7 border-b border-collection-divider pb-10">
-                <div className="flex items-baseline justify-between gap-4">
-                  <div className="flex min-w-0 flex-wrap items-center gap-x-5 gap-y-3">
-                    <Link href={`/invitatie/${t.slug}`} className="font-serif text-[28px] leading-tight text-collection-ink decoration-1 underline-offset-8 group-hover:underline focus-visible:underline">{t.name}</Link>
-                    <span className="flex shrink-0 gap-1.5" role="img" aria-label="Paletă: alb, gri și negru">
-                      {["bg-collection-light", "bg-collection-mid", "bg-collection-ink"].map((color) => <span key={color} className={`h-3.5 w-3.5 rounded-full border border-collection-divider ${color}`} />)}
-                    </span>
-                  </div>
-                  <span aria-hidden="true" className="shrink-0 font-serif text-3xl italic text-collection-copy">{t.no}</span>
-                </div>
-                <p className="mt-4 text-xs uppercase text-collection-copy">{t.mood}</p>
-                <div className="mt-7 flex flex-wrap items-center gap-x-8 gap-y-4">
-                  <Link
-                    href={`/invitatie/${t.slug}`}
-                    className="group/demo inline-flex items-center gap-3 text-[11px] uppercase text-collection-ink"
-                  >
-                    <span className="border-b border-collection-divider pb-1.5 transition-colors group-hover/demo:border-collection-ink">
-                      Demo
-                    </span>
-                    <span aria-hidden="true" className="transition-transform duration-500 group-hover/demo:translate-x-1">→</span>
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="rounded-[4px] border border-collection-ink px-6 py-2.5 text-[11px] uppercase text-collection-ink transition-colors hover:bg-collection-ink hover:text-collection-light focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-collection-ink"
-                  >
-                    Alege Invitația
-                  </Link>
-                </div>
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-
       </section>
 
       {/* STATEMENT */}
@@ -237,13 +196,6 @@ export default function Index() {
             Începe personalizarea
           </Link>
         </div>
-      </section>
-
-      {/* FULL-WIDTH PHOTO */}
-      <section className="relative h-[60vh] overflow-hidden">
-        <img src={IMG.hero} alt="Buchet de bujori" loading="lazy" width={1280} height={1600} className="h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-noir/20" />
-        <p className="absolute bottom-10 left-6 font-serif text-3xl italic text-ivory md:left-16 md:text-5xl">Cu drag, pentru cei dragi.</p>
       </section>
 
       {/* STORY 2 — SHARE (DARK) */}
@@ -340,13 +292,13 @@ export default function Index() {
 
       {/* PRICING */}
       <section id="pricing" className="border-t border-border bg-cream py-28">
-        <div className="mx-auto max-w-6xl px-6">
+        <div className="mx-auto max-w-4xl px-6">
           <div className="text-center">
             <Label>Prețuri</Label>
             <h2 className="mt-5 font-serif text-4xl sm:text-5xl">Alege pachetul potrivit</h2>
             <p className="mt-4 text-sm text-muted-foreground">Plată unică. Fără abonament.</p>
           </div>
-          <div className="mt-16 grid gap-px overflow-hidden rounded-[4px] border border-border bg-border md:grid-cols-3">
+          <div className="mt-16 grid gap-px overflow-hidden rounded-[4px] border border-border bg-border md:grid-cols-2">
             {plans.map((p) => (
               <div key={p.name} className={`flex flex-col p-10 ${p.featured ? "bg-noir text-ivory" : "bg-ivory"}`}>
                 <div className="flex items-baseline justify-between">
@@ -354,7 +306,7 @@ export default function Index() {
                   {p.featured && <span className="text-[10px] uppercase tracking-[0.3em] text-taupe">Recomandat</span>}
                 </div>
                 <p className={`mt-1 text-sm ${p.featured ? "text-ivory/60" : "text-muted-foreground"}`}>{p.desc}</p>
-                <p className="mt-8 font-serif text-5xl">€{p.price}</p>
+                <p className="mt-8 font-serif text-5xl">{`${p.price} lei`}</p>
                 <ul className="mt-8 flex-1 space-y-3 text-sm">
                   {p.features.map((f) => (
                     <li key={f} className="flex gap-3">

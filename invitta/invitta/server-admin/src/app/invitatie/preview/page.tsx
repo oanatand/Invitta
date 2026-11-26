@@ -1,6 +1,7 @@
 "use client";
 
 import { InvitationRenderer } from "@/components/InvitationRenderer";
+import { MIDNIGHT_DEMO, MIDNIGHT_SLUG } from "@/lib/invitation-content";
 import { useInvitation } from "@/lib/queries";
 import { useSessionState } from "@/lib/session";
 
@@ -16,5 +17,9 @@ export default function PreviewPage() {
       </div>
     );
   }
-  return <InvitationRenderer content={invitation?.content ?? {}} />;
+  // Not signed in, or no invitation yet: show the default model's demo instead of an empty page.
+  if (!session?.invitation || !invitation) {
+    return <InvitationRenderer content={MIDNIGHT_DEMO} modelSlug={MIDNIGHT_SLUG} backHref="/" />;
+  }
+  return <InvitationRenderer content={invitation.content} modelSlug={invitation.modelSlug} />;
 }

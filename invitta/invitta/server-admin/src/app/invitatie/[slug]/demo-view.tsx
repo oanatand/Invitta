@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useState, useEffect, type FormEvent } from "react";
+import { BackLink } from "@/components/BackLink";
+import { MODEL_HERO_VEIL, MODEL_IMAGES, MODEL_IMAGE_POSITION } from "@/lib/assets";
 import { getDemo } from "@/lib/demos";
-import { useSession } from "@/lib/session";
 
 const SECTIONS = [
   { id: "povestea", label: "Povestea" },
@@ -15,9 +15,6 @@ const SECTIONS = [
 function InvitationNav({ monogram, dark }: { monogram: string; dark: boolean }) {
   const [solid, setSolid] = useState(false);
   const [active, setActive] = useState("");
-  const session = useSession();
-  const backTo = session ? "/dashboard" : "/modele";
-
   useEffect(() => {
     const onScroll = () => setSolid(window.scrollY > window.innerHeight * 0.85);
     onScroll();
@@ -54,15 +51,14 @@ function InvitationNav({ monogram, dark }: { monogram: string; dark: boolean }) 
       }`}
     >
       <div className="mx-auto flex max-w-5xl items-center gap-6 px-5 py-2.5 sm:px-6 sm:py-3">
-        <Link
-          href={backTo}
-          aria-label="Înapoi"
+        <BackLink
+          fallback="/"
           className={`shrink-0 flex items-center gap-1.5 py-2 text-[10px] uppercase tracking-[0.22em] transition-colors sm:py-3 sm:text-[11px] sm:tracking-[0.28em] ${
             solid ? inkIdle : "text-ivory/70 hover:text-ivory"
           }`}
         >
           ← Înapoi
-        </Link>
+        </BackLink>
         <a
           href="#top"
           className={`hidden shrink-0 font-serif text-lg tracking-[0.25em] transition-colors sm:block ${
@@ -143,6 +139,19 @@ export function DemoInvitation({ slug }: { slug: string }) {
 
       {/* HERO */}
       <section className="relative h-screen min-h-[600px] w-full overflow-hidden bg-noir">
+        {/* The model's own photo is the hero background; a veil keeps the white text readable. */}
+        {MODEL_IMAGES[demo.slug] && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={MODEL_IMAGES[demo.slug]}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+              style={{ objectPosition: MODEL_IMAGE_POSITION[demo.slug] }}
+            />
+            <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${MODEL_HERO_VEIL[demo.slug] ?? 0.35})` }} />
+          </>
+        )}
         <div className="relative z-10 flex h-full flex-col items-center justify-center text-center text-white px-6">
           <p className="text-xs uppercase tracking-[0.4em] animate-shimmer">Vă invităm la nunta noastră</p>
           <div className="my-10 space-y-2 animate-fade-up">

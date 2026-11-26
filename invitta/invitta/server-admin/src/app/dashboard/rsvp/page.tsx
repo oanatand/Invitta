@@ -22,6 +22,12 @@ const statusClass: Record<RsvpStatus, string> = {
   refuzat: "bg-destructive/10 text-destructive",
 };
 
+const menuLabel: Record<string, string> = { standard: "Standard", vegetarian: "Vegetarian", vegan: "Vegan" };
+
+/** "12 nov., 18:42": when the guest answered. */
+const received = (iso: string) =>
+  new Date(iso).toLocaleString("ro-RO", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+
 const csvCell = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`;
 
 export default function RsvpPage() {
@@ -66,8 +72,16 @@ export default function RsvpPage() {
 
   const exportCsv = () => {
     const rows = [
-      ["Nume", "Status", "Persoane", "Masă", "Meniu", "Mesaj"],
-      ...groups.map((g) => [g.name, statusLabel[g.status], g.people, tableName(g), g.menu ?? "", g.message ?? ""]),
+      ["Nume", "Status", "Persoane", "Masă", "Meniu", "Mesaj", "Primit"],
+      ...groups.map((g) => [
+        g.name,
+        statusLabel[g.status],
+        g.people,
+        tableName(g),
+        g.menu ? (menuLabel[g.menu] ?? g.menu) : "",
+        g.message ?? "",
+        g.createdAt ? received(g.createdAt) : "",
+      ]),
     ];
     const blob = new Blob(["﻿" + rows.map((r) => r.map(csvCell).join(",")).join("\n")], {
       type: "text/csv;charset=utf-8",
@@ -130,6 +144,8 @@ export default function RsvpPage() {
               <TableHead className="text-left font-normal px-6 py-4 h-auto">Persoane</TableHead>
               <TableHead className="text-left font-normal px-6 py-4 h-auto">Masă</TableHead>
               <TableHead className="text-left font-normal px-6 py-4 h-auto">Meniu</TableHead>
+              <TableHead className="text-left font-normal px-6 py-4 h-auto">Mesaj</TableHead>
+              <TableHead className="text-left font-normal px-6 py-4 h-auto">Primit</TableHead>
               <TableHead className="px-6 py-4 h-auto" />
             </TableRow>
           </TableHeader>
@@ -138,7 +154,6 @@ export default function RsvpPage() {
               <TableRow key={g.id} className="border-t border-border hover:bg-secondary/30 transition-colors">
                 <TableCell className="px-6 py-5">
                   <span className="font-serif text-lg">{g.name}</span>
-                  {g.message && <p className="mt-1 max-w-xs text-xs text-muted-foreground">„{g.message}”</p>}
                 </TableCell>
                 <TableCell className="px-6 py-5">
                   <Select
@@ -160,7 +175,13 @@ export default function RsvpPage() {
                 </TableCell>
                 <TableCell className="px-6 py-5">{g.people}</TableCell>
                 <TableCell className="px-6 py-5 text-muted-foreground">{tableName(g) || "—"}</TableCell>
-                <TableCell className="px-6 py-5 text-muted-foreground capitalize">{g.menu ?? "—"}</TableCell>
+                <TableCell className="px-6 py-5 text-muted-foreground">{g.menu ? (menuLabel[g.menu] ?? g.menu) : "—"}</TableCell>
+                <TableCell className="px-6 py-5 max-w-[16rem] text-muted-foreground">
+                  {g.message ? <span className="text-xs">„{g.message}”</span> : "—"}
+                </TableCell>
+                <TableCell className="whitespace-nowrap px-6 py-5 text-xs text-muted-foreground">
+                  {g.createdAt ? received(g.createdAt) : "—"}
+                </TableCell>
                 <TableCell className="px-6 py-5 text-right">
                   <Button
                     variant="ghost"
@@ -174,7 +195,7 @@ export default function RsvpPage() {
               </TableRow>
             ))}
             {!isPending && visible.length === 0 && (
-              <TableRow><TableCell colSpan={6} className="px-6 py-16 text-center text-muted-foreground">Niciun invitat găsit.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="px-6 py-16 text-center text-muted-foreground">Niciun invitat găsit.</TableCell></TableRow>
             )}
           </TableBody>
         </Table>

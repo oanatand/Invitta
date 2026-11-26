@@ -11,6 +11,9 @@ export const qk = {
   invoices: ["invoices"] as const,
 };
 
+/** Guests answer at any time, so the couple's RSVP numbers refresh on their own (and when the tab regains focus). */
+const LIVE = { refetchInterval: 10_000, refetchOnWindowFocus: true } as const;
+
 export const useInvitation = (id?: string) =>
   useQuery({
     queryKey: qk.invitation(id),
@@ -19,13 +22,19 @@ export const useInvitation = (id?: string) =>
   });
 
 export const useStats = (id?: string) =>
-  useQuery({ queryKey: qk.stats(id), queryFn: () => api<Stats>(`/invitations/${id}/stats`), enabled: !!id });
+  useQuery({
+    queryKey: qk.stats(id),
+    queryFn: () => api<Stats>(`/invitations/${id}/stats`),
+    enabled: !!id,
+    ...LIVE,
+  });
 
 export const useGuestGroups = (id?: string) =>
   useQuery({
     queryKey: qk.groups(id),
     queryFn: async () => (await api<{ groups: GuestGroup[] }>(`/invitations/${id}/guest-groups`)).groups,
     enabled: !!id,
+    ...LIVE,
   });
 
 export const useTables = (id?: string) =>

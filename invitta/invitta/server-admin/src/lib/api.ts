@@ -47,6 +47,8 @@ export type GuestGroup = {
   menu: MenuType | null;
   message: string | null;
   members: GuestMember[];
+  /** When the answer arrived (ISO string). */
+  createdAt: string;
 };
 export type SeatingTable = {
   id: string;

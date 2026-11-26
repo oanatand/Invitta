@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 640" role="img" aria-label="Burgundy Seal">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a2527"/><stop offset="1" stop-color="#3c1416"/></linearGradient>
+    <radialGradient id="wax" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#f3ecd2"/><stop offset="1" stop-color="#c9bb8f"/></radialGradient>
+    <pattern id="orn" width="24" height="32" patternUnits="userSpaceOnUse">
+      <g fill="none" stroke="#f4e9e4" stroke-width="1.1" stroke-linecap="round" opacity=".7">
+        <path d="M12 3c-2.6 3.4-2.6 7 0 9 2.6-2 2.6-5.6 0-9z"/>
+        <path d="M12 12c-4.4 0-6.6 2.4-7.4 6 3.2-1.2 5.4-1 7.4 1 2-2 4.2-2.2 7.4-1-.8-3.6-3-6-7.4-6z"/>
+        <path d="M12 19v8M9 29h6"/>
+      </g>
+    </pattern>
+  </defs>
+  <rect width="800" height="640" fill="url(#bg)"/>
+  <polygon points="-10,150 400,430 810,150 810,270 400,550 -10,270" fill="#3a0000"/>
+  <polyline points="-10,150 400,430 810,150" fill="none" stroke="#7a3a3c" stroke-opacity=".6"/>
+  <!-- lace-framed cover, peeking above the seal -->
+  <g transform="translate(300 30)">
+    <rect width="200" height="200" fill="none" stroke="#f4e9e4" stroke-opacity=".6"/>
+    <g fill="url(#orn)"><rect x="3" y="3" width="194" height="22"/><rect x="3" y="175" width="194" height="22"/><rect x="3" y="25" width="22" height="150"/><rect x="175" y="25" width="22" height="150"/></g>
+    <rect x="26" y="26" width="148" height="148" fill="#8a7f78" opacity=".55"/>
+  </g>
+  <path d="M400 330c28-6 54 10 58 34 6 24-10 52-34 60-26 10-58-4-66-30-8-26 4-52 28-62 4-2 10-2 14-2z" fill="url(#wax)" stroke="#a8996c" stroke-opacity=".4"/>
+  <circle cx="400" cy="384" r="42" fill="none" stroke="#b3a577" stroke-width="2" opacity=".8"/>
+  <g font-family="Playfair Display, Georgia, serif" fill="#a8996c" text-anchor="middle">
+    <text x="400" y="395" font-size="30" font-style="italic">A&amp;R</text>
+  </g>
+</svg>

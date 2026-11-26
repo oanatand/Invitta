@@ -3,9 +3,19 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { api } from "@/lib/api";
-import { withDefaults, type InvitationContent } from "@/lib/invitation-content";
+import { BackLink } from "@/components/BackLink";
+import { Illustration, MenuFrame, Stars } from "@/components/InvitationArt";
+import { BurgundyDetails, BurgundyHero, BurgundySchedule, BurgundyThanks, EnvelopeGate } from "@/components/BurgundyParts";
+import {
+  BURGUNDY_SLUG,
+  MIDNIGHT_SLUG,
+  withDefaults,
+  type InvitationContent,
+  type MenuCourse,
+  type ScheduleItem,
+} from "@/lib/invitation-content";
 
-type Section = { key: string; label: string; enabled: boolean };
+type Section = { key: string; label: string; enabled: boolean; bgImage?: string };
 type Data = Record<string, any> & { sections?: Section[] };
 
 const FONT_MAP: Record<string, string> = {
@@ -16,7 +26,15 @@ const FONT_MAP: Record<string, string> = {
 };
 
 const SCRIPT_FONT = '"Italianno", "Great Vibes", cursive';
-const WOOD = "#2f3b32"; // dark green wood tone
+const WOOD = "#2f3b32"; // dark green wood tone (the standard background)
+
+/** Each design has one fixed background colour (the text is light, so these are dark tones). */
+const MIDNIGHT_BG = "#1b2a22"; // Midnight Garden: a night sky rather than a wood panel
+const BURGUNDY_BG = "#3a0507"; // Burgundy Seal: the signature wine red
+const bgOf = (d: Data): string => {
+  if (d.__transparent) return "transparent";
+  return d.__burgundy ? BURGUNDY_BG : d.__midnight ? MIDNIGHT_BG : WOOD;
+};
 
 
 /**
@@ -27,19 +45,40 @@ const WOOD = "#2f3b32"; // dark green wood tone
 export function InvitationRenderer({
   content,
   slug,
+  modelSlug,
+  backHref = "/dashboard/invitatie",
 }: {
   content: Record<string, any>;
   /** Pass the invitation slug to enable the live RSVP form (public page). */
   slug?: string;
+  /** The collection model the invitation uses; Midnight Garden adds the timeline, menu and stars. */
+  modelSlug?: string;
+  /** Where the "✕" of the preview goes. */
+  backHref?: string;
 }) {
-  const data: Data = withDefaults(content as Partial<InvitationContent>);
+  const data: Data = {
+    ...withDefaults(content as Partial<InvitationContent>, modelSlug),
+    __midnight: modelSlug === MIDNIGHT_SLUG,
+    __burgundy: modelSlug === BURGUNDY_SLUG,
+  };
   const sections: Section[] = data.sections ?? [];
   const enabled = sections.filter((s) => s.enabled);
   const has = (k: string) => enabled.some((s) => s.key === k);
 
   return (
-    <div className="min-h-screen" style={{ background: WOOD, color: "#f7f3ea" }}>
-      <TopNav data={data} has={has} showClose={!slug} />
+    <div className="min-h-screen" style={{ background: bgOf(data), color: "#f7f3ea" }}>
+      {data.__burgundy && data.envelope !== false && <EnvelopeGate data={data} />}
+      {data.__burgundy ? (
+        // The cover carries the names and date, so this model only needs a way back.
+        !slug && (
+          <CloseLink
+            href={backHref}
+            className="fixed right-5 top-5 z-50 flex h-8 w-8 items-center justify-center rounded-full text-lg text-ivory/80 transition hover:text-ivory"
+          />
+        )
+      ) : (
+        <TopNav data={data} has={has} showClose={!slug} backHref={backHref} />
+      )}
 
       <div className="scroll-smooth">
         {enabled.map((s) => (
@@ -50,7 +89,7 @@ export function InvitationRenderer({
   );
 }
 
-function TopNav({ data, has, showClose }: { data: Data; has: (k: string) => boolean; showClose: boolean }) {
+function TopNav({ data, has, showClose, backHref }: { data: Data; has: (k: string) => boolean; showClose: boolean; backHref: string }) {
   return (
     <div className="fixed top-0 left-0 right-0 z-50 px-6 sm:px-10 py-5 flex items-center justify-between">
       <div className="text-ivory">
@@ -65,25 +104,65 @@ function TopNav({ data, has, showClose }: { data: Data; has: (k: string) => bool
         {(has("civil") || has("religious") || has("party")) && (
           <a href="#unde" className="hover:opacity-70 transition">Unde?</a>
         )}
+        {has("schedule") && <a href="#program" className="hover:opacity-70 transition">Program</a>}
         {has("rsvp") && <a href="#confirmare" className="hover:opacity-70 transition">Confirmare</a>}
       </nav>
       {showClose ? (
-      <Link
-        href="/dashboard/invitatie"
-        title="Înapoi la editor"
+      <CloseLink
+        href={backHref}
         className="h-8 w-8 rounded-full flex items-center justify-center text-ivory/80 hover:text-ivory transition text-lg"
-      >
-        ✕
-      </Link>
+      />
       ) : <span className="h-8 w-8" />}
     </div>
   );
 }
 
+const EDITOR_HREF = "/dashboard/invitatie";
+
+/**
+ * The "✕" of a non-public view. From the couple's preview it returns to the editor; from a demo it goes
+ * back to wherever the visitor came from (the landing page), falling back to the landing page.
+ */
+function CloseLink({ href, className }: { href: string; className: string }) {
+  if (href === EDITOR_HREF) {
+    return (
+      <Link href={href} title="Înapoi la editor" className={className}>
+        ✕
+      </Link>
+    );
+  }
+  return (
+    <BackLink fallback={href} className={className}>
+      ✕
+    </BackLink>
+  );
+}
+
+/**
+ * Every section sits in one wrapper that owns the background (palette colour, or the section's own
+ * picture under a dark veil) and the star field; the section itself is transparent on top of it.
+ */
 function SectionBlock({ section, data, slug }: { section: Section; data: Data; slug?: string }) {
+  const img = section.key !== "hero" ? section.bgImage : undefined;
+  return (
+    <div className="relative overflow-hidden" style={{ background: bgOf(data) }}>
+      {img && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={img} alt="" className="absolute inset-0 h-full w-full object-cover" />
+      )}
+      {img && <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.45)" }} />}
+      {data.__midnight && <Stars seed={section.key} />}
+      <div className="relative z-10">
+        <SectionInner section={section} data={{ ...data, __transparent: true }} slug={slug} />
+      </div>
+    </div>
+  );
+}
+
+function SectionInner({ section, data, slug }: { section: Section; data: Data; slug?: string }) {
   switch (section.key) {
     case "hero":
-      return <HeroSection data={data} />;
+      return data.__burgundy ? <BurgundyHero data={data} /> : <HeroSection data={data} />;
     case "countdown":
       return <CountdownSection data={data} />;
     case "couple":
@@ -95,10 +174,16 @@ function SectionBlock({ section, data, slug }: { section: Section; data: Data; s
     case "party":
       // grouped into one EventDetails section, render once on the first key seen
       return <EventDetailsAnchor data={data} sectionKey={section.key} />;
+    case "schedule":
+      return data.__burgundy ? <BurgundySchedule data={data} /> : <ScheduleSection data={data} />;
+    case "details":
+      return <BurgundyDetails data={data} />;
+    case "menu":
+      return <MenuSection data={data} />;
     case "story":
       return <StorySection data={data} />;
     case "thanks":
-      return <ThanksSection data={data} />;
+      return data.__burgundy ? <BurgundyThanks data={data} /> : <ThanksSection data={data} />;
     case "rsvp":
       return <RsvpSection data={data} slug={slug} />;
     default:
@@ -125,9 +210,18 @@ function HeroSection({ data }: { data: Data }) {
     "Olivia și Albert";
 
   return (
-    <section id="ce" className="relative min-h-screen w-full overflow-hidden flex flex-col items-center justify-center text-center px-6" style={{ background: WOOD }}>
+    <section id="ce" className="relative min-h-screen w-full overflow-hidden flex flex-col items-center justify-center text-center px-6" style={{ background: bgOf(data) }}>
+      {data.heroImage && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={data.heroImage} alt="" className="absolute inset-0 h-full w-full object-cover" />
+      )}
+      <div
+        className="absolute inset-0"
+        style={{ background: `rgba(0,0,0,${(Number(data.heroOverlay) || 0) / 100})` }}
+      />
       <div className="relative z-10 text-ivory animate-fade-in pt-24 pb-16">
         <p className="text-[11px] uppercase tracking-[0.4em] opacity-80">{data.heroIntro}</p>
+        {data.heroSmall && <p className="mt-3 text-lg opacity-80">{data.heroSmall}</p>}
 
         <h1
           className="mt-10 text-6xl sm:text-7xl md:text-8xl text-white"
@@ -162,6 +256,101 @@ function HeroSection({ data }: { data: Data }) {
   );
 }
 
+/* ============================ Schedule (timeline) ============================ */
+
+const TIMELINE_ART = "text-[#d9d4c3] opacity-80";
+
+function ScheduleSection({ data }: { data: Data }) {
+  const items: ScheduleItem[] = Array.isArray(data.schedule) ? data.schedule : [];
+  if (items.length === 0) return null;
+  return (
+    <section id="program" className="px-6 py-24 text-ivory">
+      <div className="mx-auto max-w-2xl text-center">
+        {data.dateLabel && (
+          <p className="text-[11px] uppercase tracking-[0.4em] opacity-70">{data.dateLabel}</p>
+        )}
+        <h2 className="mt-6 text-6xl sm:text-7xl" style={{ fontFamily: SCRIPT_FONT, lineHeight: 1 }}>
+          {data.scheduleTitle || "Seara"}
+        </h2>
+        <div className="mx-auto mt-8 h-px w-20 bg-ivory/40" />
+      </div>
+
+      <div className="relative mx-auto mt-16 max-w-2xl">
+        {/* the vertical rule runs through the dot column */}
+        <div className="absolute bottom-0 left-1/2 top-0 w-px -translate-x-1/2 bg-ivory/30" />
+        <ol className="space-y-14">
+          {items.map((it, i) => {
+            const left = i % 2 === 1; // odd rows put the text on the left, the picture on the right
+            return (
+              <li key={i} className="relative grid grid-cols-2 items-center gap-x-10">
+                <span
+                  className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-ivory/80"
+                  style={{ background: i % 2 === 0 ? "#e8e2cf" : "#26322a" }}
+                />
+                <div className={left ? "order-2 text-left" : "order-1 flex justify-end"}>
+                  {left ? <TimelineText it={it} /> : <Illustration icon={it.icon} className={`h-24 w-24 ${TIMELINE_ART}`} />}
+                </div>
+                <div className={left ? "order-1 flex justify-start sm:justify-end" : "order-2 text-left"}>
+                  {left ? <Illustration icon={it.icon} className={`h-24 w-24 ${TIMELINE_ART}`} /> : <TimelineText it={it} />}
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+
+      {data.scheduleNote && (
+        <p className="mx-auto mt-20 max-w-md text-center font-serif text-lg italic leading-relaxed opacity-80">
+          {data.scheduleNote}
+        </p>
+      )}
+    </section>
+  );
+}
+
+function TimelineText({ it }: { it: ScheduleItem }) {
+  return (
+    <div>
+      <p className="text-[11px] uppercase tracking-[0.35em] opacity-70">{it.time}</p>
+      <p className="mt-1 font-serif text-2xl leading-tight">{it.title}</p>
+      {it.desc && <p className="mt-1 font-serif text-sm italic leading-snug opacity-70">{it.desc}</p>}
+    </div>
+  );
+}
+
+/* ============================ Dinner menu ============================ */
+
+function MenuSection({ data }: { data: Data }) {
+  const courses: MenuCourse[] = Array.isArray(data.menuCourses) ? data.menuCourses : [];
+  if (courses.length === 0 && !data.menuTitle) return null;
+  return (
+    <section id="meniu" className="px-6 py-24 text-ivory">
+      <div className="mx-auto max-w-2xl text-center">
+        <h2 className="text-6xl sm:text-7xl" style={{ fontFamily: SCRIPT_FONT, lineHeight: 1 }}>
+          {data.menuTitle || "Cina"}
+        </h2>
+        {data.menuSubtitle && (
+          <p className="mt-8 text-[11px] uppercase tracking-[0.4em] opacity-60">{data.menuSubtitle}</p>
+        )}
+        <div className="mx-auto mt-8 h-px w-20 bg-ivory/40" />
+      </div>
+      <div className="mt-12 text-[#d9d4c3]">
+        <MenuFrame>
+          <div className="space-y-9 text-center text-ivory">
+            {courses.map((c, i) => (
+              <div key={i}>
+                {c.label && <p className="text-[10px] uppercase tracking-[0.4em] opacity-50">{c.label}</p>}
+                <p className="mt-2 font-serif text-xl leading-snug">{c.text}</p>
+                {c.note && <p className="mt-1 font-serif text-xs italic opacity-70">{c.note}</p>}
+              </div>
+            ))}
+          </div>
+        </MenuFrame>
+      </div>
+    </section>
+  );
+}
+
 /* ============================ Countdown ============================ */
 
 function CountdownSection({ data }: { data: Data }) {
@@ -186,11 +375,11 @@ function CountdownSection({ data }: { data: Data }) {
   const city = [data.partyCity, data.religiousCity, data.civilCity].find(Boolean) || "";
 
   return (
-    <section id="cand" className="px-6 py-24" style={{ background: WOOD }}>
+    <section id="cand" className="px-6 py-24" style={{ background: bgOf(data) }}>
       <div className="mx-auto max-w-3xl">
         <div className="text-center text-ivory">
           <p className="italic opacity-90" style={{ fontFamily: SCRIPT_FONT, fontSize: 40 }}>
-            our wedding
+            nunta noastră
           </p>
           <h2 className="mt-2 text-5xl sm:text-6xl" style={{ fontFamily: SCRIPT_FONT }}>
             {data.dateLabel || "5 Septembrie 2026"}
@@ -221,7 +410,7 @@ function CountdownSection({ data }: { data: Data }) {
 function CoupleSection({ data }: { data: Data }) {
   if (!data.brideFirst && !data.groomFirst) return null;
   return (
-    <section className="px-6 py-20" style={{ background: WOOD }}>
+    <section className="px-6 py-20" style={{ background: bgOf(data) }}>
       <div className="mx-auto max-w-3xl grid sm:grid-cols-2 gap-10 text-center text-ivory">
         <div>
           <p className="text-[10px] uppercase tracking-[0.4em] opacity-70">Mireasă</p>
@@ -241,7 +430,7 @@ function CoupleSection({ data }: { data: Data }) {
 function ParentsSection({ data }: { data: Data }) {
   if (!data.parentsNames && !data.godparentsNames) return null;
   return (
-    <section className="px-6 py-20" style={{ background: WOOD }}>
+    <section className="px-6 py-20" style={{ background: bgOf(data) }}>
       <div className="mx-auto max-w-2xl text-center space-y-12 text-ivory">
         {data.parentsNames && (
           <div>
@@ -374,7 +563,7 @@ function StorySection({ data }: { data: Data }) {
 function ThanksSection({ data }: { data: Data }) {
   if (!data.thanksTitle && !data.thanksText) return null;
   return (
-    <section className="px-6 py-24" style={{ background: WOOD, color: "#f7f3ea" }}>
+    <section className="px-6 py-24" style={{ background: bgOf(data), color: "#f7f3ea" }}>
       <div className="mx-auto max-w-2xl text-center">
         <h3 className="text-6xl" style={{ fontFamily: SCRIPT_FONT }}>{data.thanksTitle || "Cu drag"}</h3>
         <div className="gold-divider mx-auto my-8 w-16" />
@@ -421,7 +610,7 @@ function RsvpSection({ data, slug }: { data: Data; slug?: string }) {
   };
 
   return (
-    <section id="confirmare" className="px-6 py-24" style={{ background: WOOD, color: "#f7f3ea" }}>
+    <section id="confirmare" className="px-6 py-24" style={{ background: bgOf(data), color: "#f7f3ea" }}>
       <div className="mx-auto max-w-xl text-center">
         <h2 className="text-6xl" style={{ fontFamily: SCRIPT_FONT }}>Confirmare</h2>
 

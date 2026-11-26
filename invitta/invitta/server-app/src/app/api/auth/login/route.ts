@@ -14,7 +14,7 @@ export const POST = route(async (req) => {
   const body = await parseBody(req, Body);
   const [user] = await db.select().from(users).where(eq(users.email, body.email)).limit(1);
   if (!user || !(await verifyPassword(body.password, user.passwordHash))) {
-    throw new ApiError(401, "Email sau parolă incorectă.");
+    throw new ApiError(401, "Email sau parolă incorectă. Dacă nu ai cont, creează unul nou.");
   }
   await startSession(user.id);
   const list = await db

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { InvitationRenderer } from "@/components/InvitationRenderer";
 import { isDemoSlug } from "@/lib/demos";
+import { DESIGN_DEMOS } from "@/lib/invitation-content";
 import { DemoInvitation } from "./demo-view";
 
 const SERVER_APP_URL = process.env.SERVER_APP_URL ?? "http://localhost:4000";
@@ -36,8 +37,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function InvitationPage({ params }: Props) {
   const { slug } = await params;
+  if (DESIGN_DEMOS[slug]) {
+    return <InvitationRenderer content={DESIGN_DEMOS[slug]} modelSlug={slug} backHref="/" />;
+  }
   if (isDemoSlug(slug)) return <DemoInvitation slug={slug} />;
   const inv = await loadInvitation(slug);
   if (!inv) notFound();
-  return <InvitationRenderer content={inv.content} slug={inv.slug} />;
+  return <InvitationRenderer content={inv.content} slug={inv.slug} modelSlug={inv.modelSlug} />;
 }

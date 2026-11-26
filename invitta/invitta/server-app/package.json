@@ -9,17 +9,20 @@
     "start": "next start --port 4000",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
+    "check:models": "tsx scripts/check-models.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "tsx src/db/seed.ts"
+    "db:seed": "tsx src/db/seed.ts",
+    "db:seed-user": "tsx src/db/seed-user.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "drizzle-orm": "^0.45.0",
     "jose": "^6.1.0",
     "next": "^16.4.6",
+    "nodemailer": "^10.6.1",
     "postgres": "^3.4.7",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -27,6 +30,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.16.5",
+    "@types/nodemailer": "^8.0.2",
     "@types/react": "^19.2.0",
     "dotenv": "^17.2.0",
     "drizzle-kit": "^0.31.0",
